@@ -1,0 +1,38 @@
+using System;
+
+namespace ALGORITHM
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.CursorVisible = false;
+
+            const int WAIT_TICK = 1000 / 30;//1초 = 1000ms이기 때문에 1000을 곱해준다.
+            const char CIRCLE = '\u25cf';
+            int lastTick = 0; //==>프레임 시간을 알아보기 위해 마지막 시간, 현재 시간을 출력(단위 = ms)
+           while(true)
+            {
+                #region 프레임 관리
+                //만약 경과한 시간이 1/30초보다 작다면 
+                int currentTick = System.Environment.TickCount;                              
+                if (currentTick - lastTick < WAIT_TICK)//경과한 시간 = 현재시간 - 마지막 시간
+                //1초 = 1000ms이기 때문에 1000을 곱해준다.
+                     continue;
+                lastTick = currentTick;
+                #endregion
+
+                Console.SetCursorPosition(0,0);
+               for(int i=0;i<25; i++)
+                {
+                    for(int j=0;j<25;j++)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write(CIRCLE);
+                    }
+                    Console.WriteLine();// Console.WriteLine 는 출력 이후 줄을 바꾼다. Console.Write 는 출력만
+                }
+            }
+        }
+    }
+}
