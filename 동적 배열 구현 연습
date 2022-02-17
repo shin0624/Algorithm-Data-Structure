@@ -1,0 +1,104 @@
+using System;
+
+namespace 배열__동적_배열__연결_리스트_비교
+{
+        class Program
+        {
+            static void Main(string[] args)
+            {
+
+            Board board = new Board();
+            board.Initialize();//프로그램이 시작하자마자 Initialize 실행-->board
+
+                Console.CursorVisible = false;
+
+                const int WAIT_TICK = 1000 / 30;//1초 = 1000ms이기 때문에 1000을 곱해준다.
+                const char CIRCLE = '\u25cf';
+                int lastTick = 0; //==>프레임 시간을 알아보기 위해 마지막 시간, 현재 시간을 출력(단위 = ms)
+                while (true)
+                {
+                    #region 프레임 관리
+                    //만약 경과한 시간이 1/30초보다 작다면 
+                    int currentTick = System.Environment.TickCount;
+                    if (currentTick - lastTick < WAIT_TICK)//경과한 시간 = 현재시간 - 마지막 시간
+                                                           //1초 = 1000ms이기 때문에 1000을 곱해준다.
+                        continue;
+                    lastTick = currentTick;
+                    #endregion
+
+                    Console.SetCursorPosition(0, 0);
+                    for (int i = 0; i < 25; i++)
+                    {
+                        for (int j = 0; j < 25; j++)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write(CIRCLE);
+                        }
+                        Console.WriteLine();// Console.WriteLine 는 출력 이후 줄을 바꾼다. Console.Write 는 출력만
+                    }
+                }
+            }
+        }
+    }
+    
+Board.cs-----------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace 배열__동적_배열__연결_리스트_비교
+{
+    class MyList<T>
+    {
+        const int DEFAULT_SIZE = 1;
+        T[] _data = new T[DEFAULT_SIZE];
+
+        public int Count = 0;//실제로 사용중인 데이터 개수-->데이터 추가삭제 시 유동적으로 관리해주어야함
+        public int Capacity { get { return _data.Length; } }//예약된 데이터 개수-->배열의 크기와 일치
+
+        public void Add(T item)//T라는 배열 안에 새로이 추가가 이루어질때
+        {
+            //1.공간이 충분히 남았는지 확인한다
+            if(Count>=Capacity)
+            {
+                //부족하다면 공간을 다시 늘려서 다시 확보한다
+                T[] newArray = new T[Count * 2];
+                for (int i = 0; i < Count; i++)
+                    newArray[i] = _data[i];
+                _data = newArray;//-->새로 확보한 공간 = 원본이 되게
+            }
+            //2.공간이 확보되었다면 데이터를 넣어준다
+            _data[Count] = item;
+            Count++;
+        }
+
+        public void RemoveAt(int index)
+        {
+            //101 102 103 104 105 에서 103을 지우고자 할 때--> 101 102 104 105 105 가 되는데, 가장 끝 105는 초기값으로 바꿔 0이되게함
+            for (int i = index; i < Count - 1; i++)
+                _data[i] = _data[i + 1];
+            _data[Count - 1] = default(T);
+            Count--;                
+        }
+    }
+    class Board
+    {
+        //배열, 리스트, 연결리스트 중 무엇을 사용해야 효율적인지 판단
+        public int[] _data = new int[25];//배열
+        public MyList<int> _data2 = new MyList<int>();//동적배열
+        public LinkedList<int> _data3 = new LinkedList<int>();//연결 리스트
+
+        public void Initialize()
+        {
+            _data2.Add(101);
+            _data2.Add(102);
+            _data2.Add(103);
+            _data2.Add(104);
+            _data2.Add(105);
+
+            int temp = _data2[2];//접근해서 값을 빼오는 경우. [2]이면 0, 1, 2 이니까 3번째(103)에 해당하는 데이터를 뽑아와달라는 뜻
+
+            _data2.RemoveAt(2);//-->3번째를 remove하니까 count = 4가 된다.
+        }
+    }
+}
