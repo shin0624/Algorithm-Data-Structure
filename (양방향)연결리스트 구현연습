@@ -1,0 +1,88 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace 연결리스트_구현연습
+{
+    class MyLinkedListNode<T>
+    {
+        public T data;
+        public MyLinkedListNode<T> Next;
+        public MyLinkedListNode<T> Prev;
+
+    } //CTRL+SHIFT+F = 찾기 및 바꾸기
+
+    class MyLinkedList<T>//방 목록은 처음과 마지막을 갖고있지만 내부적으로는 서로 얽키어서 이어진 상태로 구성,
+                     //코드를 구현할 때 첫번째와 마지막은 실시간 정보를 유지하도록 갱신시켜줘야함
+    {
+        public MyLinkedListNode<T> Head=null;//첫번째
+        public MyLinkedListNode<T> Tail=null;//마지막
+        public int Count = 0;
+
+        public MyLinkedListNode<T> AddLast(T data)//새로운 방을 추가
+        {
+            MyLinkedListNode<T> newRoom = new MyLinkedListNode<T>();
+            newRoom.data = data;
+
+            if (Head == null)//아직 첫번째 방이 없었다고 한다면, 새로 추가하는 방이 첫번째 방(Head)이 된다
+                Head = newRoom;
+
+            //기존 마지막 방이 있었다면, 새로 넣어주는 마지막이 마지막(Tail)이 된다.
+            //101 102 103의 방이 있던 상태에서 104번 방이 생겼다면, 103과 104를 이어주고 104를 Tail로 바꿔줘야함
+            if(Tail!=null)
+            {
+                Tail.Next = newRoom;//103->104로 이어지도록
+                newRoom.Prev = Tail;//104->103로 이어지도록
+            }
+
+            Tail = newRoom;//-->새로 추가한 방(104)이 tail이 되도록
+            Count++;//방이 하나 추가되었으니 카운트도 하나 올려줌
+            return newRoom;
+        }
+
+        public void Remove(MyLinkedListNode<T> room)
+        {
+            //101 102 103 104 105의 방 중에서
+            //101(기존 첫번째 방)이 사라진다면, 102(기존 첫번째 방의 다음방)를 head로 정해주어야함
+            if (Head == room)
+                Head = Head.Next;
+
+            //105(기존 마지막 방)이 사라진다면, 104(기존 마지막 방의 이전 방)를 Tail로 정해주어야함
+            if (Tail == room)
+                Tail = Tail.Prev;
+
+            //103이 사라진다면, 102(이전의 방)과 104(다음의 방)을 연결시켜주어야함
+            if (room.Prev != null)
+                room.Prev.Next = room.Next;
+
+            //103의 다음방(104)이 있다면 그 방(104)을 이전의 방(102)의 다음방(102->104 순서가 되도록)으로 정해주어야함
+            if (room.Next != null)
+                room.Next.Prev = room.Prev;
+
+            Count--;
+        }
+    }
+
+   
+
+    class Board
+    {
+        
+        public int[] _data = new int[25];//배열
+        public MyLinkedList<int> _data3 = new MyLinkedList<int>();//연결 리스트
+
+        public void Initialize()
+        {
+            _data3.AddLast(101);
+            _data3.AddLast(102);
+            MyLinkedListNode<int> node =  _data3.AddLast(103);
+            _data3.AddLast(104);
+            _data3.AddLast(105);
+
+
+            _data3.Remove(node);//103번째 data에 임시저장한 node를 찾아 해당하는 부분의 연결을 끊는다
+            //==>구현해야할 것 = LinkedList, LinkedListNode->연결리스트 구현에 왜 node가 추가되는가?
+            //==>node는 방의 주소가 적힌 포탈이라고 생각
+        }
+    }
+}
