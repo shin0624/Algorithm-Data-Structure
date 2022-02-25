@@ -1,0 +1,105 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace 맵_만들기
+{  
+    class Board
+    {
+        const char CIRCLE = '\u25cf';
+        public TileType[,] _tile;//2차원 배열 이용 맵만들기->2D맵에서 x,y좌표를 이용하여 맵에 접근을 수월하게 하도록
+        public int _size;
+
+        public enum TileType
+        {
+            Empty,
+            Wall,
+        }
+        public void Initialize(int size)
+        {
+            _tile = new TileType[size, size];
+            _size = size;
+
+            //갈 수 있는 지역은 녹색, 갈 수 없는 지역은 빨간색으로 표시 
+            for (int y=0;y<_size;y++)
+            {
+                for (int x= 0; x < _size;x++)
+                {
+                    if (x == 0 || x == _size - 1 || y == 0 || y == size - 1)
+                        _tile[y, x] = TileType.Wall;
+                    else
+                        _tile[y, x] = TileType.Empty;
+                                          
+                }
+            }
+        }
+
+        public void Render()//콘솔에 출력하는 렌더링 부분
+        {
+            ConsoleColor prevColor = Console.ForegroundColor;//렌더링 전에는 아무것도 건들지 않기 위해 prevcolor로 임시저장하고 있다가,
+            for (int y = 0; y < _size; y++)
+            {
+                for (int x = 0; x < _size; x++)
+                {
+                    Console.ForegroundColor= GetTileColor(_tile[y, x]);//-->(y,x)좌표의 tile의 값을 가져와 GetTileColor를 이용해 색을 추출하는 부분                  
+                    Console.Write(CIRCLE);
+                }
+                Console.WriteLine();
+            }
+            Console.ForegroundColor = prevColor;//렌더링이 끝나면 복원시켜주도록(렌더링이 실행되어도 이전 상태에 영향을 주지 않게 하기 위함)
+        }
+
+        ConsoleColor GetTileColor(TileType type)
+        {
+            switch(type)
+            {
+                case TileType.Empty:
+                    return ConsoleColor.Green;
+                case TileType.Wall:
+                    return ConsoleColor.Red;
+                default:
+                    return ConsoleColor.Green;
+
+                    
+            }
+        }
+    }
+
+}
+--------------------------------------------------------program
+using System;
+
+namespace 맵_만들기
+{
+        class Program
+        {
+            static void Main(string[] args)
+            {
+
+            Board board = new Board();
+            board.Initialize(25);//프로그램이 시작하자마자 Initialize 실행-->board
+
+                Console.CursorVisible = false;
+
+                const int WAIT_TICK = 1000 / 30;//1초 = 1000ms이기 때문에 1000을 곱해준다.
+               
+                int lastTick = 0; //==>프레임 시간을 알아보기 위해 마지막 시간, 현재 시간을 출력(단위 = ms)
+                while (true)
+                {
+                    #region 프레임 관리
+                    //만약 경과한 시간이 1/30초보다 작다면 
+                    int currentTick = System.Environment.TickCount;
+                    if (currentTick - lastTick < WAIT_TICK)//경과한 시간 = 현재시간 - 마지막 시간
+                                                           //1초 = 1000ms이기 때문에 1000을 곱해준다.
+                        continue;
+                    lastTick = currentTick;
+                    #endregion
+
+                    Console.SetCursorPosition(0, 0);
+                    board.Render();
+
+                    
+                }
+            }
+        }
+    }
