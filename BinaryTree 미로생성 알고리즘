@@ -1,0 +1,149 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace BinaryTree_미로생성_알고리즘
+{  
+    // 자동으로 생성되는 미로를 통해 길찾기 알고리즘을 구현하는 것이 목적
+    class Board
+    {
+        const char CIRCLE = '\u25cf';
+        public TileType[,] _tile;//2차원 배열 이용 맵만들기->2D맵에서 x,y좌표를 이용하여 맵에 접근을 수월하게 하도록
+        public int _size;
+
+        public enum TileType
+        {
+            Empty,
+            Wall,
+        }
+        public void Initialize(int size)//만들어야 할 미로는 테두리 부분이 벽으로 막혀있기 때문에 size가 홀수가 되어야함
+        {
+            if (size % 2 == 0)
+                return;
+            _tile = new TileType[size, size];
+            _size = size;
+//갈 수 있는 지역은 녹색, 갈 수 없는 지역은 빨간색으로 표시
+            GenerateByBinaryTree();
+             
+            
+        }
+
+        void GenerateByBinaryTree()
+        {
+            //일단 길을 다 막아버리는 작업
+            for (int y = 0; y < _size; y++)
+            {
+                for (int x = 0; x < _size; x++)
+                {
+                    if (x % 2 == 0 || y % 2 == 0)// x좌표가 짝수이거나 y좌표가 짝수인 경우 벽으로 설정->이후 1/2확률로 길을 뚫으며 미로를 만듦
+                        _tile[y, x] = TileType.Wall;
+                    else
+                        _tile[y, x] = TileType.Empty;
+                }
+            }
+            //초록색 부분에 대해서만 랜덤으로 우측 혹은 아래로 길을 뚫는 작업
+            Random rand = new Random();
+            for (int y = 0; y < _size; y++)
+            {          
+                for (int x = 0; x < _size; x++)
+                {
+                    if (x % 2 == 0 || y % 2 == 0)
+                        continue;
+
+                    if (y == _size - 2 && x == _size - 2)
+                        continue;
+
+                    if (y == _size - 2)
+                    {
+
+                        _tile[y, x + 1] = TileType.Empty;
+                        continue;
+                    }
+                    //--->미로 최외곽일 경우 랜덤함수를 실행하지 않고(벽을 뚫지 않고) 아래 혹은 옆으로 길이 날 수 있도록 함
+                    if (x == _size - 2)
+                    {
+                        _tile[y + 1, x] = TileType.Empty;
+                        continue;
+                    }
+
+                    if (rand.Next(0, 2) == 0)
+                    {
+                        _tile[y, x + 1] = TileType.Empty;//-->0과 1 중에 0의 확률일 때는 오른쪽으로 길이 뚫린다
+                    }
+                    else
+                    {
+                        _tile[y + 1, x] = TileType.Empty;//-->1의 확률일 때는 아래로 길이 뚫린다.
+                    }
+                }              
+            }
+        }
+
+        public void Render()//콘솔에 출력하는 렌더링 부분
+        {
+            ConsoleColor prevColor = Console.ForegroundColor;//렌더링 전에는 아무것도 건들지 않기 위해 prevcolor로 임시저장하고 있다가,
+            for (int y = 0; y < _size; y++)
+            {
+                for (int x = 0; x < _size; x++)
+                {
+                    Console.ForegroundColor= GetTileColor(_tile[y, x]);//-->(y,x)좌표의 tile의 값을 가져와 GetTileColor를 이용해 색을 추출하는 부분                  
+                    Console.Write(CIRCLE);
+                }
+                Console.WriteLine();
+            }
+            Console.ForegroundColor = prevColor;//렌더링이 끝나면 복원시켜주도록(렌더링이 실행되어도 이전 상태에 영향을 주지 않게 하기 위함)
+        }
+
+        ConsoleColor GetTileColor(TileType type)
+        {
+            switch(type)
+            {
+                case TileType.Empty:
+                    return ConsoleColor.Green;
+                case TileType.Wall:
+                    return ConsoleColor.Red;
+                default:
+                    return ConsoleColor.Green;
+
+                    
+            }
+        }
+    }
+
+}
+---------------------------------program-------
+using System;
+
+namespace BinaryTree_미로생성_알고리즘
+{
+        class Program
+        {
+            static void Main(string[] args)
+            {
+
+            Board board = new Board();
+            board.Initialize(25);//프로그램이 시작하자마자 Initialize 실행-->board
+
+                Console.CursorVisible = false;
+
+                const int WAIT_TICK = 1000 / 30;//1초 = 1000ms이기 때문에 1000을 곱해준다.
+               
+                int lastTick = 0; //==>프레임 시간을 알아보기 위해 마지막 시간, 현재 시간을 출력(단위 = ms)
+                while (true)
+                {
+                    #region 프레임 관리
+                    //만약 경과한 시간이 1/30초보다 작다면 
+                    int currentTick = System.Environment.TickCount;
+                    if (currentTick - lastTick < WAIT_TICK)//경과한 시간 = 현재시간 - 마지막 시간
+                                                           //1초 = 1000ms이기 때문에 1000을 곱해준다.
+                        continue;
+                    lastTick = currentTick;
+                    #endregion
+
+                    Console.SetCursorPosition(0, 0);
+                board.Render();
+
+                    
+                }
+            }
+        }
+    }
