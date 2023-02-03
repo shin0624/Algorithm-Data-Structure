@@ -1,0 +1,139 @@
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+
+namespace exercise2
+{
+
+    class Graph
+    {
+        int[,] adj = new int[6, 6]
+        {
+            {-1,15,-1,35,-1,-1 },
+            {15,-1,05,10,-1,-1 },
+            {-1,05,-1,-1,-1,-1 },
+            {35,10,-1,-1,05,-1 },
+            {-1,-1,-1,05,-1,05 },
+            {-1,-1,-1,-1,05,-1 },
+        };
+
+        public void Dijikstra(int start)
+        {
+            bool[] visited = new bool[6];//found. --->실제로 방문했는지
+            int[] distance = new int [6];//distance. -->지점 도착 시 최단거리
+            int[] parent = new int[6];
+            Array.Fill(distance, Int32.MaxValue);//distance 기본값. 배열의 모든 값을 채우는 array.fill 기능으로 int32가 표현할 수 있는 가장 큰 value를 넣어줌.
+
+            distance[start] = 0;
+            parent[start] = start;
+            while(true)
+            {
+                // 제일 좋은 후보를 찾는다.(가장 가까이에 있는)
+
+                //가장 유력한 후보의 거리와 번호를 저장
+                int closest = Int32.MaxValue;//거리
+                int now = -1;
+
+                for(int i=0; i<6; i++)
+                {
+                    //이미 방문한 정점은 스킵
+                    if (visited[i])
+                        continue;
+                    //아직 발견(예약)된 적이 없거나, 기존 후보보다 멀리 있으면 스킵
+                    if (distance[i] == Int32.MaxValue || distance[i] >= closest)
+                        continue;
+                    //여태껏 발견한 가장 좋은 후보라는 의미이기 때문에 정보를 갱신
+                    closest= distance[i];
+                    now = i;
+                }
+                //다음 후보가 하나도 없다(모든 점을 다 찾았거나, 연결 단절일 때)-->연결 종료
+                if (now == -1)
+                    break;
+
+                //제일 좋은 후보를 찾은 후, 방문
+                visited[now] = true;
+
+                //방문한 정점과 인접한 정점들을 조사해서, 상황에 따라 발견한 최단거리 갱신
+                for(int next =0; next<6; next++)
+                {
+                    //연결되지 않은 정점 스킵
+                    if (adj[now, next] == -1)
+                        continue;
+                    //이미 방문한 정점은 스킵
+                    if (visited[next])
+                        continue;  
+
+                    //새로 조사된 정점의 최단거리 계산
+                    int nextDist = distance[now] + adj[now, next];
+                    //만약 기존에 발견한 최단거리가 새로 조사된 최단거리보다 크면, 정보를 갱신
+                    if (nextDist < distance[next])
+                    {
+                        distance[next] = nextDist;
+                        parent[next] = now;
+                    }
+                }
+
+            }
+
+            
+        }
+
+        public void BFS(int start)
+        {
+            bool[] found = new bool[6];
+            int[] parent = new int[6];//어디서부터 왔는지 추적
+            int[] distance = new int[6];//도착까지 얼마의 거리가 걸렸는지 추적
+
+
+
+            Queue<int> q = new Queue<int>();
+            q.Enqueue(start);
+            found[start] = true;
+
+            found[start] = true; //0번
+            parent[start] = start;
+            distance[start] = 0;//시작점(0번)
+
+
+            while (q.Count > 0)
+            {
+                int now = q.Dequeue();
+                Console.WriteLine(now);
+
+                for (int next = 0; next < 6; next++)
+                {
+                    if (adj[now, next] == 0)//인접하지 않았으면 스킵
+                        continue;
+
+                    if (found[next])//이미 발견한 것이라면 스킵
+                        continue;
+
+                    q.Enqueue(next);//예약목록
+
+                    found[start] = true;
+                    parent[start] = now; //1번의 부모는 0번(0-->1로 옴을 의미)
+                    distance[next] = distance[now] + 1;//이전까지 간 거리 +1 = 이동 거리
+
+                    found[next] = true; //예약목록에 넣고 true로 변경
+                }
+
+            }
+        }
+    }
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            //DFS(Depth First Search 깊이 우선 탐색
+            //BFS(BREATH First Search 너비 우선 탐색
+            Graph graph = new Graph();
+            graph.BFS(0);//-->결과는 0 1 3 2 4 5
+
+
+
+        }
+
+    }
+}
